@@ -49,7 +49,7 @@
             app:layout_constraintVertical_bias="0.61" />
 
         <EditText
-            android:id="@+id/editTextTextPersonName"
+            android:id="@+id/username_input"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
@@ -68,7 +68,7 @@
             android:layout_marginBottom="4dp"
             android:gravity="center_horizontal"
             android:text="@string/username_info_text_string"
-            app:layout_constraintBottom_toTopOf="@+id/editTextTextPersonName"
+            app:layout_constraintBottom_toTopOf="@+id/username_input"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>

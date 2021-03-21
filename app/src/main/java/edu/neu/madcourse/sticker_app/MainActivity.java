@@ -1,6 +1,8 @@
 package edu.neu.madcourse.sticker_app;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -10,12 +12,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.navigation.fragment.NavHostFragment;
 
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
+
+    private EditText usernameInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,10 +32,26 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        usernameInput = findViewById(R.id.username_input);
     }
 
     public void openMessageActivity(View view) {
-        startActivity(new Intent(MainActivity.this, MessagingActivity.class));
+
+        SharedPreferences sharedPref = this.getSharedPreferences("userDetails", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+
+        String username = usernameInput.getText().toString().trim();
+
+        Log.e("MainActivity", username);
+
+        if (username.equals("")) {
+            Toast.makeText(this, "Can't send stickers to friends without a username!", Toast.LENGTH_SHORT).show();
+        } else {
+            editor.putString(getString(R.string.username), username);
+            editor.apply();
+            startActivity(new Intent(MainActivity.this, MessagingActivity.class));
+        }
     }
 
     @Override

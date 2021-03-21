@@ -13,4 +13,5 @@
     <string name="username_info_text_string">Enter username to login or have an account created.</string>
 
     <string name="log_token">Log Token</string>
+    <string name="username">Username</string>
 </resources>

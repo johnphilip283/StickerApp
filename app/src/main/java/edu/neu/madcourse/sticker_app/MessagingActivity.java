@@ -1,5 +1,7 @@
 package edu.neu.madcourse.sticker_app;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -26,18 +28,18 @@ public class MessagingActivity extends AppCompatActivity  {
 
         Button logTokenButton = findViewById(R.id.button_log_token);
 
-        logTokenButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FirebaseMessaging.getInstance().getToken().addOnSuccessListener(MessagingActivity.this, new OnSuccessListener<String>() {
-                    @Override
-                    public void onSuccess(String s) {
-                        Log.e("Token", s);
-                        Toast.makeText(MessagingActivity.this, s, Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-        });
+        SharedPreferences userDetails = this.getSharedPreferences("userDetails", MODE_PRIVATE);
+
+        String username = userDetails.getString(getString(R.string.username), "");
+
+        // TODO: Add node in Firebase if user doesn't exist, otherwise retrieve data.
+
+        logTokenButton.setOnClickListener(v -> FirebaseMessaging.getInstance().getToken().addOnSuccessListener(MessagingActivity.this, s -> {
+            Log.e("Token", s);
+            Toast.makeText(MessagingActivity.this, s, Toast.LENGTH_SHORT).show();
+        }));
     }
+
+
 
 }
