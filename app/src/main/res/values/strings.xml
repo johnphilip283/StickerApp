@@ -7,8 +7,10 @@
     <string name="next">Login</string>
     <string name="previous">Previous</string>
 
-    <string name="hello_first_fragment">Stick It To 'Em</string>
+    <string name="hello_first_fragment">Stick It To \'Em</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="username_hint">Username</string>
     <string name="username_info_text_string">Enter username to login or have an account created.</string>
+
+    <string name="log_token">Log Token</string>
 </resources>
