@@ -8,6 +8,7 @@ import android.os.Bundle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.navigation.fragment.NavHostFragment;
@@ -24,7 +25,9 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String USERNAME_STRING = "USERNAME_STRING";
     private EditText usernameInput;
+    private String username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         usernameInput = findViewById(R.id.username_input);
+        init(savedInstanceState);
     }
 
     public void openMessageActivity(View view) {
@@ -41,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences sharedPref = this.getSharedPreferences("userDetails", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
 
-        String username = usernameInput.getText().toString().trim();
+        username = usernameInput.getText().toString().trim();
 
         if (username.equals("")) {
             Toast.makeText(this, "Can't send stickers to friends without a username!", Toast.LENGTH_SHORT).show();
@@ -49,6 +53,27 @@ public class MainActivity extends AppCompatActivity {
             editor.putString(getString(R.string.username), username);
             editor.apply();
             startActivity(new Intent(MainActivity.this, MessagingActivity.class));
+        }
+    }
+
+    private void init(Bundle savedInstanceState) {
+        initialItemData(savedInstanceState);
+    }
+
+    // Handling Orientation Changes on Android
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putString(USERNAME_STRING, username);
+
+        super.onSaveInstanceState(outState);
+    }
+
+    private void initialItemData(Bundle savedInstanceState) {
+        // Not the first time to open this Activity
+        if (savedInstanceState != null && savedInstanceState.containsKey(USERNAME_STRING)) {
+            String savedUsername = savedInstanceState.getString(USERNAME_STRING);
+            username = savedUsername;
+            usernameInput.setText(username);
         }
     }
 
