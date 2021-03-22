@@ -204,9 +204,9 @@ public class MessagingActivity extends AppCompatActivity {
         // This is only a possible way to do, please find your own way to generate the key
         for (int i = 0; i < size; i++) {
             // put image information into instance
-            outState.putString(KEY_OF_INSTANCE + i + "0", stickers.get(i).image);
+            outState.putString(KEY_OF_INSTANCE + i + "0", stickers.get(i).getImage());
             // put sender information into instance
-            outState.putString(KEY_OF_INSTANCE + i + "1", stickers.get(i).sender);
+            outState.putString(KEY_OF_INSTANCE + i + "1", stickers.get(i).getSender());
         }
         super.onSaveInstanceState(outState);
     }
