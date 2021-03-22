@@ -176,13 +176,14 @@ public class MessagingActivity extends AppCompatActivity {
         }
     }
 
-    public void sendNotification(View view){
+    // use on new message receive to send a notification
+    public void sendNotification(View view, StickerCard content){
         Intent intent = new Intent(this, MessagingActivity.class);
         PendingIntent newIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent, 0);
         String channelId = getString(R.string.channel_id);
         Notification notification = new NotificationCompat.Builder(this,channelId)
                 .setContentTitle("Stick it")
-                .setContentText("New sticker received").setSmallIcon(R.drawable.earth).setContentIntent(newIntent).build();
+                .setContentText("A new sticker received from " + content.getSender()).setSmallIcon(R.drawable.earth).setContentIntent(newIntent).build();
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notification.flags |= Notification.FLAG_AUTO_CANCEL ;
         notificationManager.notify(0, notification);
