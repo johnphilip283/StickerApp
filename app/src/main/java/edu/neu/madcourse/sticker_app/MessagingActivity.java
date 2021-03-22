@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,12 +48,14 @@ public class MessagingActivity extends AppCompatActivity {
     private final String SERVER_KEY = "key=AAAAYwQf6u0:APA91bFZ1hImC_ptJGPIScoJIUAsvUP2ORuOJkkFfCkWkWT3dGS6SnMtZ2u0U3hhpDkVwzOJLvdfXAH2KN6fqzSW4Zi4JgkK8n4wOIwMhpevlTCvVyGmzIxc0RRNab-89lK6m7MRbQgR";
     private static final String KEY_OF_INSTANCE = "KEY_OF_INSTANCE";
     private static final String NUMBER_OF_ITEMS = "NUMBER_OF_ITEMS";
+    private static final String USERNAME_STRING = "USERNAME_STRING";
     String CLIENT_KEY = "";
     String TAG = "MessagingActivity";
 
     private DatabaseReference database;
     private TextView numStickersReceived;
     private List<StickerCard> stickers;
+    private String username;
 
     private RecyclerView recyclerView;
     private RviewAdapter rviewAdapter;
@@ -72,7 +75,7 @@ public class MessagingActivity extends AppCompatActivity {
         numStickersReceived = findViewById(R.id.num_stickers_received);
 
         SharedPreferences userDetails = this.getSharedPreferences(getString(R.string.user_details), MODE_PRIVATE);
-        String username = userDetails.getString(getString(R.string.username), "");
+        username = userDetails.getString(getString(R.string.username), "");
 
         FirebaseMessaging.getInstance().getToken().addOnSuccessListener(MessagingActivity.this, token -> {
             this.CLIENT_KEY = token;
@@ -208,6 +211,7 @@ public class MessagingActivity extends AppCompatActivity {
             // put sender information into instance
             outState.putString(KEY_OF_INSTANCE + i + "1", stickers.get(i).getSender());
         }
+        outState.putString(USERNAME_STRING, username);
         super.onSaveInstanceState(outState);
     }
 
@@ -218,7 +222,8 @@ public class MessagingActivity extends AppCompatActivity {
 
     private void initialItemData(Bundle savedInstanceState) {
         // Not the first time to open this Activity
-        if (savedInstanceState != null && savedInstanceState.containsKey(NUMBER_OF_ITEMS)) {
+        if (savedInstanceState != null && savedInstanceState.containsKey(NUMBER_OF_ITEMS)
+                && savedInstanceState.containsKey(USERNAME_STRING)) {
             if (stickers == null || stickers.size() == 0) {
 
                 int size = savedInstanceState.getInt(NUMBER_OF_ITEMS);
@@ -233,6 +238,10 @@ public class MessagingActivity extends AppCompatActivity {
                     stickers.add(itemCard);
                 }
             }
+            String savedUsername = savedInstanceState.getString(USERNAME_STRING);
+            username = savedUsername;
+            EditText usernameEditText = findViewById(R.id.editTextTextPersonName);
+            usernameEditText.setText(username);
         }
         // The first time to open this Activity
         else {
