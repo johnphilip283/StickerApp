@@ -21,7 +21,6 @@
         </activity>
 
         <activity android:name=".MessagingActivity" />
-        <activity android:name=".DatabaseActivity" />
 
         <service android:name="edu.neu.madcourse.sticker_app.services.MessagingService" >
             <intent-filter>
