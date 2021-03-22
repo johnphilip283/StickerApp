@@ -21,4 +21,7 @@
     <string name="send">Send!</string>
     <string name="num_stickers_received">Number of stickers received: %1$s</string>
     <string name="sender">Sender: %1$s</string>
+
+    <string name="channel_name">Sticker Notifcation</string>
+    <string name="channel_description">Notification Channel for the Stick It To app</string>
 </resources>

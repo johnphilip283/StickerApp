@@ -1,7 +1,10 @@
 package edu.neu.madcourse.sticker_app;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -31,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 
 import edu.neu.madcourse.sticker_app.models.User;
+
+import static android.provider.Settings.System.getString;
 
 public class MessagingActivity extends AppCompatActivity {
 
@@ -151,6 +156,18 @@ public class MessagingActivity extends AppCompatActivity {
 
         recyclerView.setAdapter(rviewAdapter);
         recyclerView.setLayoutManager(layoutManager);
+    }
+
+    public void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.channel_name);
+            String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(getString(R.string.channel_id), name, importance);
+            channel.setDescription(description);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
     }
 
 
