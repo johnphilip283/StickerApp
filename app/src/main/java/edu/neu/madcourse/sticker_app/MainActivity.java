@@ -43,8 +43,6 @@ public class MainActivity extends AppCompatActivity {
 
         String username = usernameInput.getText().toString().trim();
 
-        Log.e("MainActivity", username);
-
         if (username.equals("")) {
             Toast.makeText(this, "Can't send stickers to friends without a username!", Toast.LENGTH_SHORT).show();
         } else {
