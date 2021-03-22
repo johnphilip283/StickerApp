@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -35,6 +37,14 @@ import androidx.core.app.NotificationCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +66,7 @@ public class MessagingActivity extends AppCompatActivity {
     private TextView numStickersReceived;
     private List<StickerCard> stickers;
     private String username;
+    private EditText usernameEditText;
 
     private RecyclerView recyclerView;
     private RviewAdapter rviewAdapter;
@@ -76,6 +87,7 @@ public class MessagingActivity extends AppCompatActivity {
 
         SharedPreferences userDetails = this.getSharedPreferences(getString(R.string.user_details), MODE_PRIVATE);
         username = userDetails.getString(getString(R.string.username), "");
+        usernameEditText = findViewById(R.id.editTextTextPersonName);
 
         FirebaseMessaging.getInstance().getToken().addOnSuccessListener(MessagingActivity.this, token -> {
             this.CLIENT_KEY = token;
@@ -182,8 +194,8 @@ public class MessagingActivity extends AppCompatActivity {
         }
     }
 
-    // use on new message receive to send a notification
-    public void sendNotification(View view, StickerCard content){
+    // use on new message receive to display a notification
+    public void displayNotification(View view, StickerCard content){
         Intent intent = new Intent(this, MessagingActivity.class);
         PendingIntent newIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent, 0);
         String channelId = getString(R.string.channel_id);
@@ -193,6 +205,66 @@ public class MessagingActivity extends AppCompatActivity {
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notification.flags |= Notification.FLAG_AUTO_CANCEL ;
         notificationManager.notify(0, notification);
+    }
+
+    public void sendNotifcationToUser(View view) {
+        // get username
+        String clientUsername = usernameEditText.getText().toString();
+        // get client token
+        DatabaseReference ref = database.child("users").child(username);
+        DatabaseReference clientTokenRef = ref.child(clientUsername).child("clientToken");
+        clientTokenRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String clientToken = dataSnapshot.getValue(String.class);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // send notification
+                        sendMessageToDevice(clientToken);
+                    }
+                }).start();
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    // Send sticker notification to target device
+    private void sendMessageToDevice(String targetToken) {
+        JSONObject jPayload = new JSONObject();
+        JSONObject jNotification = new JSONObject();
+        JSONObject jdata = new JSONObject();
+        try {
+            jNotification.put("title", "New sticker received!");
+            jNotification.put("body", "Sticker");
+            jNotification.put("sound", "default");
+            jNotification.put("badge", "1");
+
+            jPayload.put("to", targetToken);
+            jPayload.put("priority", "high");
+            jPayload.put("notification", jNotification);
+            jPayload.put("data",jdata);
+
+            URL url = new URL("https://fcm.googleapis.com/fcm/send");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Authorization", SERVER_KEY);
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoOutput(true);
+
+            // Send FCM message content.
+            OutputStream outputStream = conn.getOutputStream();
+            outputStream.write(jPayload.toString().getBytes());
+            outputStream.close();
+
+        } catch (JSONException | IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -240,7 +312,7 @@ public class MessagingActivity extends AppCompatActivity {
             }
             String savedUsername = savedInstanceState.getString(USERNAME_STRING);
             username = savedUsername;
-            EditText usernameEditText = findViewById(R.id.editTextTextPersonName);
+            usernameEditText = findViewById(R.id.editTextTextPersonName);
             usernameEditText.setText(username);
         }
         // The first time to open this Activity
