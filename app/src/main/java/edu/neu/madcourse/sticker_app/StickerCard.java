@@ -28,4 +28,9 @@ public class StickerCard {
     public void setSender(String sender) {
         this.sender = sender;
     }
+
+    @Override
+    public String toString() {
+        return this.image + " " + this.sender;
+    }
 }

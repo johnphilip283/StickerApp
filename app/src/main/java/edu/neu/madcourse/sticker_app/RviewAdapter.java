@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class RviewAdapter extends RecyclerView.Adapter<RviewHolder> {
@@ -36,6 +35,6 @@ public class RviewAdapter extends RecyclerView.Adapter<RviewHolder> {
 
     @Override
     public int getItemCount() {
-        return 0;
+        return stickers.size();
     }
 }
