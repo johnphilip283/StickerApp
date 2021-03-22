@@ -24,4 +24,7 @@
 
     <string name="channel_name">Sticker Notifcation</string>
     <string name="channel_description">Notification Channel for the Stick It To app</string>
+
+    <string name="history_header">History:</string>
+
 </resources>

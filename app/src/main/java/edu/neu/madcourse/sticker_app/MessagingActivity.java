@@ -4,31 +4,21 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import androidx.annotation.NonNull;
@@ -41,7 +31,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -50,8 +39,6 @@ import java.util.List;
 import java.util.Map;
 
 import edu.neu.madcourse.sticker_app.models.User;
-
-import static android.provider.Settings.System.getString;
 
 public class MessagingActivity extends AppCompatActivity {
 
@@ -80,8 +67,10 @@ public class MessagingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_messaging);
 
         stickers = new ArrayList<>();
-        stickers.add(new StickerCard("hi", "hello"));
+
         init(savedInstanceState);
+
+        createRecyclerView();
 
         numStickersReceived = findViewById(R.id.num_stickers_received);
 
@@ -102,13 +91,10 @@ public class MessagingActivity extends AppCompatActivity {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
 
-//                List<Map<String, String>> history = dataSnapshot.getValue();
-//                for (Map<String, String> entry : history) {
-//                    for (Map.Entry<String,String> pair : entry.entrySet()) {
-//                        pair.getKey(), pair.getValue()
-//                    }
-//                }
-//                Log.e(TAG, "onChildAdded: dataSnapshot = " + dataSnapshot.getValue());
+                GenericTypeIndicator<Map<String, String>> t = new GenericTypeIndicator<Map<String, String>>() {};
+                Map<String, String> history = dataSnapshot.getValue(t);
+
+                MessagingActivity.this.addSticker(new StickerCard(history.get("img"), history.get("sender")));
             }
 
             @Override
@@ -141,16 +127,19 @@ public class MessagingActivity extends AppCompatActivity {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
                 User user = dataSnapshot.getValue(User.class);
+                stickers.clear();
 
                 if (user != null) {
                     user.username = username;
                     numStickersReceived.setText(getString(R.string.num_stickers_received, user.numStickersSent.toString()));
                     if (user.receivedHistory != null) {
                         for (Map<String, String> sticker: user.receivedHistory) {
-                            Log.v(TAG, sticker.get("img") + " " + sticker.get("sender"));
+//                            Log.v(TAG, sticker.get("img") + " " + sticker.get("sender"));
                             MessagingActivity.this.addSticker(new StickerCard(sticker.get("img"), sticker.get("sender")));
                         }
+                        rviewAdapter.notifyDataSetChanged();
                     }
+
                 } else {
                     user = new User(username, CLIENT_KEY);
                     database.child("users").child(username).setValue(user);
@@ -177,7 +166,6 @@ public class MessagingActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.sticker_list);
         recyclerView.setHasFixedSize(true);
         rviewAdapter = new RviewAdapter(stickers);
-
         recyclerView.setAdapter(rviewAdapter);
         recyclerView.setLayoutManager(layoutManager);
     }
@@ -320,6 +308,5 @@ public class MessagingActivity extends AppCompatActivity {
             // empty list for now
         }
     }
-
 
 }
