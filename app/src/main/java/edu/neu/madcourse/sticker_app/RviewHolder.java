@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class RviewHolder extends RecyclerView.ViewHolder {
 
-    // TODO: change
     public TextView stickerIcon;
     public TextView sender;
 

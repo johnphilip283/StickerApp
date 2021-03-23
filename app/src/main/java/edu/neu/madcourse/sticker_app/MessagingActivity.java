@@ -35,6 +35,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,6 +55,7 @@ public class MessagingActivity extends AppCompatActivity {
     private List<StickerCard> stickers;
     private String username;
     private EditText usernameEditText;
+    private Integer numStickersSent;
 
     private RecyclerView recyclerView;
     private RviewAdapter rviewAdapter;
@@ -69,8 +71,6 @@ public class MessagingActivity extends AppCompatActivity {
         stickers = new ArrayList<>();
 
         init(savedInstanceState);
-
-        createRecyclerView();
 
         numStickersReceived = findViewById(R.id.num_stickers_received);
 
@@ -91,6 +91,7 @@ public class MessagingActivity extends AppCompatActivity {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
 
+                // TODO: add notification
                 GenericTypeIndicator<Map<String, String>> t = new GenericTypeIndicator<Map<String, String>>() {};
                 Map<String, String> history = dataSnapshot.getValue(t);
 
@@ -120,7 +121,7 @@ public class MessagingActivity extends AppCompatActivity {
 
         // TODO: Not sure if all of this goes into onCreate or should be in a separate method
 
-        // Read from the database by listening for a change to that item.
+        // Sync with the database for all this user's data.
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -131,12 +132,15 @@ public class MessagingActivity extends AppCompatActivity {
 
                 if (user != null) {
                     user.username = username;
+                    MessagingActivity.this.numStickersSent = user.numStickersSent;
                     numStickersReceived.setText(getString(R.string.num_stickers_received, user.numStickersSent.toString()));
                     if (user.receivedHistory != null) {
-                        for (Map<String, String> sticker: user.receivedHistory) {
-//                            Log.v(TAG, sticker.get("img") + " " + sticker.get("sender"));
-                            MessagingActivity.this.addSticker(new StickerCard(sticker.get("img"), sticker.get("sender")));
+
+                        for (Map.Entry<String, Map<String, String>> entry : user.receivedHistory.entrySet()) {
+                            Map<String, String> pair = entry.getValue();
+                            MessagingActivity.this.addSticker(new StickerCard(pair.get("img"), pair.get("sender")));
                         }
+
                         rviewAdapter.notifyDataSetChanged();
                     }
 
@@ -144,7 +148,6 @@ public class MessagingActivity extends AppCompatActivity {
                     user = new User(username, CLIENT_KEY);
                     database.child("users").child(username).setValue(user);
                 }
-
             }
 
             @Override
@@ -195,31 +198,48 @@ public class MessagingActivity extends AppCompatActivity {
         notificationManager.notify(0, notification);
     }
 
-    public void sendNotifcationToUser(View view) {
+    public void sendNotificationToUser(View view) {
         // get username
         String clientUsername = usernameEditText.getText().toString();
         // get client token
-        DatabaseReference ref = database.child("users").child(username);
-        DatabaseReference clientTokenRef = ref.child(clientUsername).child("clientToken");
-        clientTokenRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                String clientToken = dataSnapshot.getValue(String.class);
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // send notification
-                        sendMessageToDevice(clientToken);
-                    }
-                }).start();
 
-            }
+        DatabaseReference clientRef = database.child("users").child(clientUsername);
+        DatabaseReference userRef = database.child("users").child(username);
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+//        DatabaseReference clientTokenRef = clientRef.child("clientToken");
 
-            }
-        });
+        userRef.child("numStickersSent").setValue(numStickersSent + 1);
+
+        StickerCard sticker = new StickerCard("TESTING", "TESTING DID THIS WORK");
+
+//        Map<String, String> sticker = new HashMap<String, String>();
+
+//        sticker.put("img", "TESTING");
+//        sticker.put("sender", "THIS IS A TEST");
+
+        DatabaseReference newHistoryElement = clientRef.child("receivedHistory").push();
+
+        newHistoryElement.setValue(sticker);
+
+//        clientTokenRef.addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                String clientToken = dataSnapshot.getValue(String.class);
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        // send notification
+//                        sendMessageToDevice(clientToken);
+//                    }
+//                }).start();
+//
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//
+//            }
+//        });
     }
 
     // Send sticker notification to target device
@@ -236,7 +256,7 @@ public class MessagingActivity extends AppCompatActivity {
             jPayload.put("to", targetToken);
             jPayload.put("priority", "high");
             jPayload.put("notification", jNotification);
-            jPayload.put("data",jdata);
+            jPayload.put("data", jdata);
 
             URL url = new URL("https://fcm.googleapis.com/fcm/send");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -302,10 +322,6 @@ public class MessagingActivity extends AppCompatActivity {
             username = savedUsername;
             usernameEditText = findViewById(R.id.editTextTextPersonName);
             usernameEditText.setText(username);
-        }
-        // The first time to open this Activity
-        else {
-            // empty list for now
         }
     }
 

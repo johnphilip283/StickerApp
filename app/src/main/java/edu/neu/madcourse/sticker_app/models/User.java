@@ -6,6 +6,7 @@ import com.google.firebase.database.IgnoreExtraProperties;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,13 +16,13 @@ public class User {
     public String username;
     public String clientToken;
     public Integer numStickersSent;
-    public List<Map<String, String>> receivedHistory;
+    public Map<String, Map<String, String>> receivedHistory;
 
     public User() {
 
     }
 
-    public User(String username, String clientToken, Integer numStickersSent, List<Map<String, String>> receivedHistory) {
+    public User(String username, String clientToken, Integer numStickersSent, Map<String, Map<String, String>> receivedHistory) {
         this.username = username;
         this.clientToken = clientToken;
         this.numStickersSent = numStickersSent;
@@ -32,7 +33,7 @@ public class User {
         this.username = username;
         this.clientToken = clientToken;
         this.numStickersSent = 0;
-        this.receivedHistory = new ArrayList<>();
+        this.receivedHistory = new HashMap<>();
     }
 
     @Override
@@ -43,8 +44,8 @@ public class User {
         sb.append(numStickersSent + "\n");
 //        Log.v("User", history);
         if (receivedHistory != null) {
-            for (Map<String, String> entry : receivedHistory) {
-                for (Map.Entry<String,String> pair : entry.entrySet()) {
+            for (Map.Entry<String, Map<String, String>> entry : receivedHistory.entrySet()) {
+                for (Map.Entry<String,String> pair : entry.getValue().entrySet()) {
                     sb.append(pair.getKey() + " " + pair.getValue());
                 }
                 sb.append("\n");
