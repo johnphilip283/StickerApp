@@ -25,7 +25,7 @@ public class RviewAdapter extends RecyclerView.Adapter<RviewHolder> {
     @Override
     public void onBindViewHolder(@NonNull RviewHolder holder, int position) {
         StickerCard card = stickers.get(position);
-        holder.sender.setText(card.getSender());
+        holder.sender.setText(String.format("Sent by: %s", card.getSender()));
         holder.stickerIcon.setText(this.getEmojiByUnicode(0x1F975));
     }
 

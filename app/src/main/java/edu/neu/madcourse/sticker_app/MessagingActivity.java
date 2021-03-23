@@ -37,7 +37,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,11 +48,14 @@ public class MessagingActivity extends AppCompatActivity {
     private static final String KEY_OF_INSTANCE = "KEY_OF_INSTANCE";
     private static final String NUMBER_OF_ITEMS = "NUMBER_OF_ITEMS";
     private static final String USERNAME_STRING = "USERNAME_STRING";
+    private static final String NUM_STICKERS_SENT = "NUM_STICKERS_SENT";
+
     String CLIENT_KEY = "";
     String TAG = "MessagingActivity";
 
     private DatabaseReference database;
     private TextView numStickersReceived;
+    private TextView loggedInUsernameDisplay;
     private List<StickerCard> stickers;
     private String username;
     private EditText usernameEditText;
@@ -78,7 +80,8 @@ public class MessagingActivity extends AppCompatActivity {
 
         SharedPreferences userDetails = this.getSharedPreferences(getString(R.string.user_details), MODE_PRIVATE);
         username = userDetails.getString(getString(R.string.username), "");
-        usernameEditText = findViewById(R.id.editTextTextPersonName);
+        usernameEditText = findViewById(R.id.emoji_recipient_input);
+        loggedInUsernameDisplay = findViewById(R.id.username_display);
 
         FirebaseMessaging.getInstance().getToken().addOnSuccessListener(MessagingActivity.this, token -> {
             this.CLIENT_KEY = token;
@@ -105,7 +108,7 @@ public class MessagingActivity extends AppCompatActivity {
                 MessagingActivity.this.displayNotification(content);
                 MessagingActivity.this.addSticker(content);
 
-                String message = String.format("Received %s from %s.", img, sender);
+                String message = String.format("Received %s from %s.", MessagingActivity.this.getEmojiByUnicode(0x1F975), sender);
                 Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
             }
 
@@ -145,6 +148,7 @@ public class MessagingActivity extends AppCompatActivity {
                     user.username = username;
                     MessagingActivity.this.numStickersSent = user.numStickersSent;
                     numStickersReceived.setText(getString(R.string.num_stickers_received, user.numStickersSent.toString()));
+                    loggedInUsernameDisplay.setText(getString(R.string.logged_in_username, username));
                     if (user.receivedHistory != null) {
 
                         for (Map.Entry<String, Map<String, String>> entry : user.receivedHistory.entrySet()) {
@@ -278,6 +282,8 @@ public class MessagingActivity extends AppCompatActivity {
             outState.putString(KEY_OF_INSTANCE + i + "1", stickers.get(i).getSender());
         }
         outState.putString(USERNAME_STRING, username);
+        outState.putInt(NUM_STICKERS_SENT, numStickersSent);
+
         super.onSaveInstanceState(outState);
     }
 
@@ -304,10 +310,11 @@ public class MessagingActivity extends AppCompatActivity {
                     stickers.add(itemCard);
                 }
             }
-            String savedUsername = savedInstanceState.getString(USERNAME_STRING);
-            username = savedUsername;
-            usernameEditText = findViewById(R.id.editTextTextPersonName);
-            usernameEditText.setText(username);
+            username = savedInstanceState.getString(USERNAME_STRING);
+            Integer numStickersSent = savedInstanceState.getInt(NUM_STICKERS_SENT);
+
+            loggedInUsernameDisplay.setText(getString(R.string.logged_in_username, username));
+            numStickersReceived.setText(getString(R.string.num_stickers_received, numStickersSent.toString()));
         }
     }
 

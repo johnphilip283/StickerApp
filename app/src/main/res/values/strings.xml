@@ -26,5 +26,6 @@
     <string name="channel_description">Notification Channel for the Stick It To app</string>
 
     <string name="history_header">History:</string>
+    <string name="logged_in_username">Username: %1$s</string>
 
 </resources>
