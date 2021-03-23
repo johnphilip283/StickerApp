@@ -12,6 +12,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -35,7 +37,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,11 +48,14 @@ public class MessagingActivity extends AppCompatActivity {
     private static final String KEY_OF_INSTANCE = "KEY_OF_INSTANCE";
     private static final String NUMBER_OF_ITEMS = "NUMBER_OF_ITEMS";
     private static final String USERNAME_STRING = "USERNAME_STRING";
+    private static final String NUM_STICKERS_SENT = "NUM_STICKERS_SENT";
+
     String CLIENT_KEY = "";
     String TAG = "MessagingActivity";
 
     private DatabaseReference database;
     private TextView numStickersReceived;
+    private TextView loggedInUsernameDisplay;
     private List<StickerCard> stickers;
     private String username;
     private EditText usernameEditText;
@@ -65,6 +69,7 @@ public class MessagingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         createNotificationChannel();
+        numStickersSent = 0;
 
         setContentView(R.layout.activity_messaging);
 
@@ -76,7 +81,8 @@ public class MessagingActivity extends AppCompatActivity {
 
         SharedPreferences userDetails = this.getSharedPreferences(getString(R.string.user_details), MODE_PRIVATE);
         username = userDetails.getString(getString(R.string.username), "");
-        usernameEditText = findViewById(R.id.editTextTextPersonName);
+        usernameEditText = findViewById(R.id.emoji_recipient_input);
+        loggedInUsernameDisplay = findViewById(R.id.username_display);
 
         FirebaseMessaging.getInstance().getToken().addOnSuccessListener(MessagingActivity.this, token -> {
             this.CLIENT_KEY = token;
@@ -95,7 +101,16 @@ public class MessagingActivity extends AppCompatActivity {
                 GenericTypeIndicator<Map<String, String>> t = new GenericTypeIndicator<Map<String, String>>() {};
                 Map<String, String> history = dataSnapshot.getValue(t);
 
-                MessagingActivity.this.addSticker(new StickerCard(history.get("img"), history.get("sender")));
+                String img = history.get("img");
+                String sender = history.get("sender");
+
+                StickerCard content = new StickerCard(img, sender);
+
+                MessagingActivity.this.displayNotification(content);
+                MessagingActivity.this.addSticker(content);
+
+                String message = String.format("Received %s from %s.", MessagingActivity.this.getEmojiByUnicode(0x1F975), sender);
+                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -134,6 +149,7 @@ public class MessagingActivity extends AppCompatActivity {
                     user.username = username;
                     MessagingActivity.this.numStickersSent = user.numStickersSent;
                     numStickersReceived.setText(getString(R.string.num_stickers_received, user.numStickersSent.toString()));
+                    loggedInUsernameDisplay.setText(getString(R.string.logged_in_username, username));
                     if (user.receivedHistory != null) {
 
                         for (Map.Entry<String, Map<String, String>> entry : user.receivedHistory.entrySet()) {
@@ -186,11 +202,11 @@ public class MessagingActivity extends AppCompatActivity {
     }
 
     // use on new message receive to display a notification
-    public void displayNotification(View view, StickerCard content){
+    public void displayNotification(StickerCard content) {
         Intent intent = new Intent(this, MessagingActivity.class);
         PendingIntent newIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent, 0);
         String channelId = getString(R.string.channel_id);
-        Notification notification = new NotificationCompat.Builder(this,channelId)
+        Notification notification = new NotificationCompat.Builder(this, channelId)
                 .setContentTitle("Stick it")
                 .setContentText("A new sticker received from " + content.getSender()).setSmallIcon(R.drawable.earth).setContentIntent(newIntent).build();
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -198,48 +214,19 @@ public class MessagingActivity extends AppCompatActivity {
         notificationManager.notify(0, notification);
     }
 
-    public void sendNotificationToUser(View view) {
+    public void sendStickerToUser(View view) {
         // get username
         String clientUsername = usernameEditText.getText().toString();
-        // get client token
 
         DatabaseReference clientRef = database.child("users").child(clientUsername);
         DatabaseReference userRef = database.child("users").child(username);
 
-//        DatabaseReference clientTokenRef = clientRef.child("clientToken");
-
         userRef.child("numStickersSent").setValue(numStickersSent + 1);
 
-        StickerCard sticker = new StickerCard("TESTING", this.getEmojiByUnicode(0x1F975));
-
-//        Map<String, String> sticker = new HashMap<String, String>();
-
-//        sticker.put("img", "TESTING");
-//        sticker.put("sender", "THIS IS A TEST");
+        StickerCard sticker = new StickerCard(this.getEmojiByUnicode(0x1F975), username);
 
         DatabaseReference newHistoryElement = clientRef.child("receivedHistory").push();
-
         newHistoryElement.setValue(sticker);
-
-//        clientTokenRef.addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                String clientToken = dataSnapshot.getValue(String.class);
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        // send notification
-//                        sendMessageToDevice(clientToken);
-//                    }
-//                }).start();
-//
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
     }
 
     private String getEmojiByUnicode(int unicode){
@@ -296,6 +283,7 @@ public class MessagingActivity extends AppCompatActivity {
             outState.putString(KEY_OF_INSTANCE + i + "1", stickers.get(i).getSender());
         }
         outState.putString(USERNAME_STRING, username);
+
         super.onSaveInstanceState(outState);
     }
 
@@ -307,7 +295,8 @@ public class MessagingActivity extends AppCompatActivity {
     private void initialItemData(Bundle savedInstanceState) {
         // Not the first time to open this Activity
         if (savedInstanceState != null && savedInstanceState.containsKey(NUMBER_OF_ITEMS)
-                && savedInstanceState.containsKey(USERNAME_STRING)) {
+                && savedInstanceState.containsKey(USERNAME_STRING)
+                && savedInstanceState.containsKey(NUM_STICKERS_SENT)) {
             if (stickers == null || stickers.size() == 0) {
 
                 int size = savedInstanceState.getInt(NUMBER_OF_ITEMS);
@@ -322,10 +311,11 @@ public class MessagingActivity extends AppCompatActivity {
                     stickers.add(itemCard);
                 }
             }
-            String savedUsername = savedInstanceState.getString(USERNAME_STRING);
-            username = savedUsername;
-            usernameEditText = findViewById(R.id.editTextTextPersonName);
-            usernameEditText.setText(username);
+            username = savedInstanceState.getString(USERNAME_STRING);
+            String numStickersSent = savedInstanceState.getString(NUM_STICKERS_SENT);
+
+            loggedInUsernameDisplay.setText(getString(R.string.logged_in_username, username));
+            numStickersReceived.setText(getString(R.string.num_stickers_received, numStickersSent));
         }
     }
 
