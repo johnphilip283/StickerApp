@@ -69,6 +69,7 @@ public class MessagingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         createNotificationChannel();
+        numStickersSent = 0;
 
         setContentView(R.layout.activity_messaging);
 
@@ -282,7 +283,6 @@ public class MessagingActivity extends AppCompatActivity {
             outState.putString(KEY_OF_INSTANCE + i + "1", stickers.get(i).getSender());
         }
         outState.putString(USERNAME_STRING, username);
-        outState.putString(NUM_STICKERS_SENT, numStickersSent.toString());
 
         super.onSaveInstanceState(outState);
     }
