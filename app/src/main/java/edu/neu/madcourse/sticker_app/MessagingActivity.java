@@ -12,6 +12,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -95,10 +97,16 @@ public class MessagingActivity extends AppCompatActivity {
                 GenericTypeIndicator<Map<String, String>> t = new GenericTypeIndicator<Map<String, String>>() {};
                 Map<String, String> history = dataSnapshot.getValue(t);
 
-                StickerCard content = new StickerCard(history.get("img"), history.get("sender"));
+                String img = history.get("img");
+                String sender = history.get("sender");
+
+                StickerCard content = new StickerCard(img, sender);
 
                 MessagingActivity.this.displayNotification(content);
                 MessagingActivity.this.addSticker(content);
+
+                String message = String.format("Received %s from %s.", img, sender);
+                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
             }
 
             @Override
