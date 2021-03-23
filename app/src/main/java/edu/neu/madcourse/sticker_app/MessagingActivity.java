@@ -282,7 +282,7 @@ public class MessagingActivity extends AppCompatActivity {
             outState.putString(KEY_OF_INSTANCE + i + "1", stickers.get(i).getSender());
         }
         outState.putString(USERNAME_STRING, username);
-        outState.putInt(NUM_STICKERS_SENT, numStickersSent);
+        outState.putString(NUM_STICKERS_SENT, numStickersSent.toString());
 
         super.onSaveInstanceState(outState);
     }
@@ -295,7 +295,8 @@ public class MessagingActivity extends AppCompatActivity {
     private void initialItemData(Bundle savedInstanceState) {
         // Not the first time to open this Activity
         if (savedInstanceState != null && savedInstanceState.containsKey(NUMBER_OF_ITEMS)
-                && savedInstanceState.containsKey(USERNAME_STRING)) {
+                && savedInstanceState.containsKey(USERNAME_STRING)
+                && savedInstanceState.containsKey(NUM_STICKERS_SENT)) {
             if (stickers == null || stickers.size() == 0) {
 
                 int size = savedInstanceState.getInt(NUMBER_OF_ITEMS);
@@ -311,10 +312,10 @@ public class MessagingActivity extends AppCompatActivity {
                 }
             }
             username = savedInstanceState.getString(USERNAME_STRING);
-            Integer numStickersSent = savedInstanceState.getInt(NUM_STICKERS_SENT);
+            String numStickersSent = savedInstanceState.getString(NUM_STICKERS_SENT);
 
             loggedInUsernameDisplay.setText(getString(R.string.logged_in_username, username));
-            numStickersReceived.setText(getString(R.string.num_stickers_received, numStickersSent.toString()));
+            numStickersReceived.setText(getString(R.string.num_stickers_received, numStickersSent));
         }
     }
 
