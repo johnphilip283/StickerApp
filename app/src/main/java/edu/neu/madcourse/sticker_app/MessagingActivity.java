@@ -210,7 +210,7 @@ public class MessagingActivity extends AppCompatActivity {
 
         userRef.child("numStickersSent").setValue(numStickersSent + 1);
 
-        StickerCard sticker = new StickerCard("TESTING", "TESTING DID THIS WORK");
+        StickerCard sticker = new StickerCard("TESTING", this.getEmojiByUnicode(0x1F975));
 
 //        Map<String, String> sticker = new HashMap<String, String>();
 
@@ -240,6 +240,10 @@ public class MessagingActivity extends AppCompatActivity {
 //
 //            }
 //        });
+    }
+
+    private String getEmojiByUnicode(int unicode){
+        return new String(Character.toChars(unicode));
     }
 
     // Send sticker notification to target device

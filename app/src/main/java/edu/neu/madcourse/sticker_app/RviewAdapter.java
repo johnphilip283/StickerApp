@@ -26,15 +26,15 @@ public class RviewAdapter extends RecyclerView.Adapter<RviewHolder> {
     public void onBindViewHolder(@NonNull RviewHolder holder, int position) {
         StickerCard card = stickers.get(position);
         holder.sender.setText(card.getSender());
-        holder.stickerIcon.setText(card.getImage());
-
-        // TODO: figure out how to show image
-//        holder.stickerIcon.setImageIcon();
-//        holder.stickerIcon.setImageResource(card.sender);
+        holder.stickerIcon.setText(this.getEmojiByUnicode(0x1F975));
     }
 
     @Override
     public int getItemCount() {
         return stickers.size();
+    }
+
+    private String getEmojiByUnicode(int unicode){
+        return new String(Character.toChars(unicode));
     }
 }
