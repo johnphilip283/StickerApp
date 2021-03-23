@@ -2,23 +2,23 @@ package edu.neu.madcourse.sticker_app;
 
 public class StickerCard {
 
-    private String image;
+    private String img;
     private String sender;
 
     public StickerCard() {
     }
 
-    public StickerCard(String image, String sender) {
-        this.image = image;
+    public StickerCard(String img, String sender) {
+        this.img = img;
         this.sender = sender;
     }
 
     public String getImage() {
-        return image;
+        return img;
     }
 
-    public void setImage(String image) {
-        this.image = image;
+    public void setImage(String img) {
+        this.img = img;
     }
 
     public String getSender() {
@@ -31,6 +31,6 @@ public class StickerCard {
 
     @Override
     public String toString() {
-        return this.image + " " + this.sender;
+        return this.img + " " + this.sender;
     }
 }

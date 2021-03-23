@@ -19,7 +19,7 @@
     <string name="channel_id">Stick it To \'Em</string>
     <string name="username_input_text">Enter username of user you want to send a sticker to: </string>
     <string name="send">Send!</string>
-    <string name="num_stickers_received">Number of stickers received: %1$s</string>
+    <string name="num_stickers_received">Number of stickers sent: %1$s</string>
     <string name="sender">Sender: %1$s</string>
 
     <string name="channel_name">Sticker Notifcation</string>

@@ -95,7 +95,10 @@ public class MessagingActivity extends AppCompatActivity {
                 GenericTypeIndicator<Map<String, String>> t = new GenericTypeIndicator<Map<String, String>>() {};
                 Map<String, String> history = dataSnapshot.getValue(t);
 
-                MessagingActivity.this.addSticker(new StickerCard(history.get("img"), history.get("sender")));
+                StickerCard content = new StickerCard(history.get("img"), history.get("sender"));
+
+                MessagingActivity.this.displayNotification(content);
+                MessagingActivity.this.addSticker(content);
             }
 
             @Override
@@ -186,11 +189,11 @@ public class MessagingActivity extends AppCompatActivity {
     }
 
     // use on new message receive to display a notification
-    public void displayNotification(View view, StickerCard content){
+    public void displayNotification(StickerCard content) {
         Intent intent = new Intent(this, MessagingActivity.class);
         PendingIntent newIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent, 0);
         String channelId = getString(R.string.channel_id);
-        Notification notification = new NotificationCompat.Builder(this,channelId)
+        Notification notification = new NotificationCompat.Builder(this, channelId)
                 .setContentTitle("Stick it")
                 .setContentText("A new sticker received from " + content.getSender()).setSmallIcon(R.drawable.earth).setContentIntent(newIntent).build();
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -198,48 +201,19 @@ public class MessagingActivity extends AppCompatActivity {
         notificationManager.notify(0, notification);
     }
 
-    public void sendNotificationToUser(View view) {
+    public void sendStickerToUser(View view) {
         // get username
         String clientUsername = usernameEditText.getText().toString();
-        // get client token
 
         DatabaseReference clientRef = database.child("users").child(clientUsername);
         DatabaseReference userRef = database.child("users").child(username);
 
-//        DatabaseReference clientTokenRef = clientRef.child("clientToken");
-
         userRef.child("numStickersSent").setValue(numStickersSent + 1);
 
-        StickerCard sticker = new StickerCard("TESTING", this.getEmojiByUnicode(0x1F975));
-
-//        Map<String, String> sticker = new HashMap<String, String>();
-
-//        sticker.put("img", "TESTING");
-//        sticker.put("sender", "THIS IS A TEST");
+        StickerCard sticker = new StickerCard(this.getEmojiByUnicode(0x1F975), username);
 
         DatabaseReference newHistoryElement = clientRef.child("receivedHistory").push();
-
         newHistoryElement.setValue(sticker);
-
-//        clientTokenRef.addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                String clientToken = dataSnapshot.getValue(String.class);
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        // send notification
-//                        sendMessageToDevice(clientToken);
-//                    }
-//                }).start();
-//
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
     }
 
     private String getEmojiByUnicode(int unicode){
